@@ -1,0 +1,8 @@
+{
+  "name": "Survey Kepuasan Masyarakat - MPP",
+  "description": "Aplikasi Survey Kepuasan Masyarakat (SKM) responsif terintegrasi Firebase Firestore real-time, analitik IKM PermenPAN-RB, manajemen 32 instansi, dan cetak laporan fisik resmi.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

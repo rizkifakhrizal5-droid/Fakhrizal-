@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 140" width="100%" height="100%">
+  <defs>
+    <filter id="logoShadow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="2" dy="3" stdDeviation="1.5" flood-color="#0284c7" flood-opacity="0.8"/>
+    </filter>
+  </defs>
+
+  <!-- Sky blue background rounded rect matching IMG_0076 -->
+  <rect width="540" height="140" rx="18" fill="#38bdf8"/>
+
+  <!-- Official GAMPIL Emblem from IMG_0077.png -->
+  <g transform="translate(18, 10) scale(0.35)">
+    <g fill="none" stroke="#1e245a" stroke-width="7" stroke-linejoin="round" stroke-linecap="round">
+      <path d="M 28 85 L 118 32 L 118 135 L 28 185 Z" fill="#252c6a" />
+      <path d="M 28 185 L 118 135 L 118 310 L 28 250 Z" fill="#252c6a" />
+      
+      <path d="M 92 120 L 92 315 L 118 310 L 118 135 Z" fill="#ffffff" />
+      <path d="M 92 120 Q 92 90, 105 85 Q 118 90, 118 135 Z" fill="#ffffff" />
+      
+      <path d="M 118 32 L 195 76 L 195 180 L 118 135 Z" fill="#ffffff" />
+      
+      <path d="M 118 135 L 195 180 L 195 330 L 118 310 Z" fill="#252c6a" />
+      
+      <path d="M 195 180 L 222 195 L 222 280 L 195 260 Z" fill="#ffffff" />
+      
+      <path d="M 195 76 L 280 125 L 280 270 L 195 330 Z" fill="#ffffff" />
+
+      <path d="M 28 85 L 118 32 L 195 76 L 280 125 L 280 270 L 195 330 L 118 310 L 28 250 Z" stroke="#1e245a" stroke-width="8" />
+      <path d="M 118 32 L 118 310" stroke="#1e245a" stroke-width="7" />
+      <path d="M 195 76 L 195 330" stroke="#1e245a" stroke-width="7" />
+      
+      <path d="M 96 312 L 96 125 Q 96 95, 118 95" stroke="#1e245a" stroke-width="6" />
+      <path d="M 172 324 L 172 205 Q 172 175, 195 175" stroke="#1e245a" stroke-width="6" />
+    </g>
+  </g>
+
+  <!-- TEXT "GAMPIL" -->
+  <g transform="translate(138, 70)" filter="url(#logoShadow)">
+    <text x="0" y="0" 
+          font-family="'Impact', 'Arial Black', sans-serif" 
+          font-size="68" 
+          font-weight="900" 
+          letter-spacing="2" 
+          fill="#ffffff" 
+          stroke="#1e293b" 
+          stroke-width="5" 
+          paint-order="stroke fill"
+          stroke-linejoin="miter">
+      GAMPIL
+    </text>
+  </g>
+
+  <!-- Underline horizontal divider bar -->
+  <line x1="138" y1="80" x2="525" y2="80" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+  <line x1="138" y1="82" x2="525" y2="82" stroke="#1e293b" stroke-width="1.5" stroke-linecap="round"/>
+
+  <!-- SUBTITLE -->
+  <g transform="translate(139, 102)">
+    <text x="0" y="0" 
+          font-family="'Arial Rounded MT Bold', 'Plus Jakarta Sans', sans-serif" 
+          font-size="16.5" 
+          font-weight="800" 
+          letter-spacing="0.2"
+          fill="#ffffff"
+          stroke="#0f172a" 
+          stroke-width="3.5" 
+          paint-order="stroke fill"
+          stroke-linejoin="round">
+      Gampang Memproses Perizinan dan
+    </text>
+    <text x="58" y="20" 
+          font-family="'Arial Rounded MT Bold', 'Plus Jakarta Sans', sans-serif" 
+          font-size="16.5" 
+          font-weight="800" 
+          letter-spacing="0.2"
+          fill="#ffffff"
+          stroke="#0f172a" 
+          stroke-width="3.5" 
+          paint-order="stroke fill"
+          stroke-linejoin="round">
+      Mendapatkan Layanan
+    </text>
+  </g>
+</svg>

@@ -1,0 +1,109 @@
+{
+  "entities": {
+    "SurveyResponse": {
+      "title": "SurveyResponse",
+      "description": "Public satisfaction survey response submission",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "agencyId": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "agencyName": {
+          "type": "string",
+          "maxLength": 200
+        },
+        "rating": {
+          "type": "number"
+        },
+        "aspectSpeed": {
+          "type": "number"
+        },
+        "aspectFriendliness": {
+          "type": "number"
+        },
+        "aspectClarity": {
+          "type": "number"
+        },
+        "aspectFacility": {
+          "type": "number"
+        },
+        "feedback": {
+          "type": "string",
+          "maxLength": 1000
+        },
+        "isAnonymous": {
+          "type": "boolean"
+        },
+        "respondentName": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "gender": {
+          "type": "string",
+          "maxLength": 30
+        },
+        "ageGroup": {
+          "type": "string",
+          "maxLength": 50
+        },
+        "education": {
+          "type": "string",
+          "maxLength": 50
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "timestamp": {
+          "type": "number"
+        },
+        "surveyDate": {
+          "type": "string",
+          "description": "Selected survey date in YYYY-MM-DD format"
+        }
+      },
+      "required": ["agencyName", "rating", "createdAt"]
+    },
+    "Agency": {
+      "title": "Agency",
+      "description": "Master list of public service agencies",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "name": {
+          "type": "string",
+          "maxLength": 200
+        },
+        "category": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "active": {
+          "type": "boolean"
+        },
+        "order": {
+          "type": "number"
+        }
+      },
+      "required": ["name", "active"]
+    }
+  },
+  "firestore": {
+    "/surveys/{surveyId}": {
+      "schema": "SurveyResponse",
+      "description": "Survey submissions from citizens"
+    },
+    "/agencies/{agencyId}": {
+      "schema": "Agency",
+      "description": "Public agencies registered at MPP"
+    }
+  }
+}

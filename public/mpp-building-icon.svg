@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <!-- MPP Building Icon matching user uploaded image.png -->
+  <g fill="#0f2b48">
+    <!-- Roof Triangle (Outer Pediment) with rounded cap -->
+    <path d="M 256 50 C 263 50 270 54 275 60 L 460 190 C 470 197 466 214 452 214 L 60 214 C 46 214 42 197 52 190 L 237 60 C 242 54 249 50 256 50 Z" />
+    
+    <!-- White Triangular Inner Opening to create the pediment outline -->
+    <path d="M 256 100 L 415 200 L 97 200 Z" fill="#ffffff" />
+    
+    <!-- Solid Dot / Circle in Center of Pediment -->
+    <circle cx="256" cy="155" r="22" fill="#0f2b48" />
+
+    <!-- Entablature / Top Beam above Columns -->
+    <path d="M 72 214 L 440 214 C 452 214 456 226 456 236 L 456 244 C 456 254 446 260 436 260 L 76 260 C 66 260 56 254 56 244 L 56 236 C 56 226 60 214 72 214 Z" />
+
+    <!-- Left Outer Wall -->
+    <rect x="84" y="258" width="44" height="154" fill="#0f2b48" />
+
+    <!-- Right Outer Wall -->
+    <rect x="384" y="258" width="44" height="154" fill="#0f2b48" />
+
+    <!-- Center Left Pillar -->
+    <rect x="192" y="278" width="44" height="134" rx="3" fill="#0f2b48" />
+
+    <!-- Center Right Pillar -->
+    <rect x="276" y="278" width="44" height="134" rx="3" fill="#0f2b48" />
+
+    <!-- Bottom Base / Platform with rounded ends -->
+    <rect x="42" y="408" width="428" height="42" rx="21" fill="#0f2b48" />
+  </g>
+</svg>
