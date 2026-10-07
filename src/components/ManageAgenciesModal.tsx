@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import {
-  X,
   Plus,
   Download,
   Upload,
@@ -11,7 +10,10 @@ import {
   FileJson,
   Check,
   Search,
-  AlertCircle
+  AlertCircle,
+  Building2,
+  Sparkles,
+  CheckCircle2
 } from 'lucide-react';
 import { Agency } from '../types/survey';
 
@@ -42,6 +44,16 @@ export const ManageAgenciesModal: React.FC<ManageAgenciesModalProps> = ({
   const [isAddMode, setIsAddMode] = useState<boolean>(false);
   const [formName, setFormName] = useState('');
   const [formActive, setFormActive] = useState(true);
+
+  // Fitur Hapus 3 Dimensi State
+  const [agencyToDelete, setAgencyToDelete] = useState<Agency | null>(null);
+  const [isDeleting, setIsDeleting] = useState<boolean>(false);
+
+  // Status Notifikasi Aksi Permanen
+  const [notification, setNotification] = useState<{
+    message: string;
+    type: 'success' | 'delete' | 'error';
+  } | null>(null);
 
   // Import state
   const [importMode, setImportMode] = useState<'append' | 'replace'>('append');
@@ -77,33 +89,80 @@ export const ManageAgenciesModal: React.FC<ManageAgenciesModalProps> = ({
     e.preventDefault();
     if (!formName.trim()) return;
 
-    if (isAddMode) {
-      const newAgency: Agency = {
-        id: `agency-${Date.now()}`,
-        name: formName.trim(),
-        category: 'Pelayanan Publik',
-        active: formActive,
-        order: agencies.length + 1,
-      };
-      await onSaveAgency(newAgency);
-    } else if (editingAgency) {
-      const updated: Agency = {
-        ...editingAgency,
-        name: formName.trim(),
-        active: formActive,
-      };
-      await onSaveAgency(updated);
+    try {
+      if (isAddMode) {
+        // ID unik permanen Firestore
+        const newAgency: Agency = {
+          id: `agency-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+          name: formName.trim(),
+          category: 'Pelayanan Publik',
+          active: formActive,
+          order: agencies.length + 1,
+        };
+        await onSaveAgency(newAgency);
+        setNotification({
+          message: `Instansi "${newAgency.name}" berhasil ditambahkan & tersimpan permanen di cloud database!`,
+          type: 'success',
+        });
+      } else if (editingAgency) {
+        const updated: Agency = {
+          ...editingAgency,
+          name: formName.trim(),
+          active: formActive,
+        };
+        await onSaveAgency(updated);
+        setNotification({
+          message: `Perubahan instansi "${updated.name}" berhasil disimpan permanen!`,
+          type: 'success',
+        });
+      }
+      setTimeout(() => setNotification(null), 3500);
+      setEditingAgency(null);
+      setIsAddMode(false);
+    } catch (err) {
+      console.error('Save agency error:', err);
+      setNotification({
+        message: 'Gagal menyimpan instansi ke database. Silakan coba lagi.',
+        type: 'error',
+      });
+      setTimeout(() => setNotification(null), 3500);
     }
+  };
 
-    setEditingAgency(null);
-    setIsAddMode(false);
+  const handleConfirmDelete = async () => {
+    if (!agencyToDelete) return;
+    setIsDeleting(true);
+    try {
+      await onDeleteAgency(agencyToDelete.id);
+      setNotification({
+        message: `Instansi "${agencyToDelete.name}" berhasil dihapus secara permanen dari sistem.`,
+        type: 'delete',
+      });
+      setTimeout(() => setNotification(null), 3500);
+      setAgencyToDelete(null);
+    } catch (err) {
+      console.error('Delete error:', err);
+      setNotification({
+        message: 'Gagal menghapus instansi dari database. Silakan coba lagi.',
+        type: 'error',
+      });
+      setTimeout(() => setNotification(null), 3500);
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   const handleToggleStatus = async (agency: Agency) => {
-    await onSaveAgency({
+    const updated = {
       ...agency,
       active: !agency.active,
+    };
+    await onSaveAgency(updated);
+    setNotification({
+      message: `Status instansi "${agency.name}" diubah menjadi ${updated.active ? 'Aktif' : 'Nonaktif'} (Tersimpan Permanen).`,
+      type: 'success',
     });
+    setTimeout(() => setNotification(null), 3000);
   };
 
   // Export handlers
@@ -195,58 +254,76 @@ export const ManageAgenciesModal: React.FC<ManageAgenciesModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
-      <div className="bg-white rounded-2xl max-w-lg sm:max-w-xl w-full max-h-[70vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden text-xs">
-        {/* Modal Top Bar (Ukuran diperkecil ringkas) */}
-        <div className="px-4 py-2.5 border-b border-slate-200 flex items-center justify-between bg-slate-50/80">
-          <div>
-            <h2 className="text-sm sm:text-base font-black text-slate-900">
-              Menu Kelola Instansi Publik MPP Bojonegoro
-            </h2>
-            <p className="text-[10px] text-slate-500">
-              Pengaturan instansi publik, status keaktifan, dan impor / ekspor data
-            </p>
+    <div className="fixed inset-0 z-50 overflow-y-auto overscroll-y-contain bg-slate-950/70 backdrop-blur-xs animate-in fade-in duration-200 touch-pan-y">
+      <div className="min-h-full flex items-center justify-center p-2.5 sm:p-4 py-6">
+        <div className="card-3d bg-white rounded-3xl max-w-xl sm:max-w-2xl w-full max-h-[85vh] flex flex-col shadow-[0_25px_60px_-15px_rgba(15,23,42,0.45)] border-2 border-slate-200/90 overflow-hidden text-xs transform-gpu transition-all my-auto">
+        {/* Modal Top Bar 3D Accent & Header */}
+        <div className="px-5 py-3.5 border-b border-blue-900/40 flex items-center justify-between bg-gradient-to-r from-blue-950 via-indigo-950 to-slate-950 text-white shadow-md relative overflow-hidden shrink-0">
+          <div className="absolute -top-12 -right-12 w-36 h-36 bg-blue-500/10 rounded-full blur-2xl pointer-events-none" />
+
+          <div className="flex items-center gap-3 min-w-0 z-10">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg border border-blue-300/30 shrink-0 transform-gpu hover:rotate-6 transition-transform">
+              <Building2 className="w-5 h-5 text-white drop-shadow-md" />
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <h2 className="text-sm sm:text-base font-black text-white tracking-tight truncate">
+                  Menu Kelola Penambahan Instansi Publik MPP Bojonegoro
+                </h2>
+                <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 text-[9px] font-bold uppercase tracking-wider shrink-0">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  Cloud Sync
+                </span>
+              </div>
+              <p className="text-[10.5px] text-blue-200/80 truncate">
+                Tambah, edit, hapus instansi publik &amp; sinkron otomatis permanen lintas perangkat
+              </p>
+            </div>
           </div>
-          {/* Tombol X disembunyikan sesuai permintaan */}
+
+          {/* Tombol X sengaja disembunyikan sesuai permintaan (penutupan modal menggunakan tombol Tutup di bawah) */}
         </div>
 
-        {/* Tab Sub-navigation (Ukuran Diperkecil Ramping) */}
-        <div className="px-4 pt-1.5 border-b border-slate-200 bg-white flex items-center justify-between flex-wrap gap-2">
-          <div className="flex gap-1">
+        {/* Tab Sub-navigation 3D */}
+        <div className="px-5 pt-2 border-b border-slate-200 bg-slate-50/60 flex items-center justify-between flex-wrap gap-2 shrink-0">
+          <div className="flex gap-1.5">
             <button
               type="button"
               onClick={() => setActiveTab('list')}
-              className={`px-2.5 py-1 text-xs font-semibold rounded-t-lg transition-colors border-b-2 cursor-pointer ${
+              className={`px-3 py-1.5 text-xs font-bold rounded-t-xl transition-all border-b-2 cursor-pointer flex items-center gap-1.5 ${
                 activeTab === 'list'
-                  ? 'border-blue-600 text-blue-600 bg-blue-50/50'
+                  ? 'border-blue-600 text-blue-700 bg-white shadow-2xs'
                   : 'border-transparent text-slate-600 hover:text-slate-900'
               }`}
             >
-              Daftar Instansi
+              <span>Daftar Instansi</span>
+              <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-blue-100 text-blue-800 font-mono font-bold">
+                {agencies.length}
+              </span>
             </button>
             <button
               type="button"
               onClick={() => setActiveTab('export')}
-              className={`px-2.5 py-1 text-xs font-semibold rounded-t-lg transition-colors border-b-2 flex items-center gap-1 cursor-pointer ${
+              className={`px-3 py-1.5 text-xs font-bold rounded-t-xl transition-all border-b-2 flex items-center gap-1.5 cursor-pointer ${
                 activeTab === 'export'
-                  ? 'border-blue-600 text-blue-600 bg-blue-50/50'
+                  ? 'border-blue-600 text-blue-700 bg-white shadow-2xs'
                   : 'border-transparent text-slate-600 hover:text-slate-900'
               }`}
             >
-              <Download className="w-3 h-3" />
-              Ekspor Data
+              <Download className="w-3.5 h-3.5 text-blue-600" />
+              <span>Ekspor Data</span>
             </button>
             <button
               type="button"
               onClick={() => setActiveTab('import')}
-              className={`px-2.5 py-1 text-xs font-semibold rounded-t-lg transition-colors border-b-2 flex items-center gap-1 cursor-pointer ${
+              className={`px-3 py-1.5 text-xs font-bold rounded-t-xl transition-all border-b-2 flex items-center gap-1.5 cursor-pointer ${
                 activeTab === 'import'
-                  ? 'border-blue-600 text-blue-600 bg-blue-50/50'
+                  ? 'border-blue-600 text-blue-700 bg-white shadow-2xs'
                   : 'border-transparent text-slate-600 hover:text-slate-900'
               }`}
             >
-              <Upload className="w-3 h-3" />
-              Impor Data
+              <Upload className="w-3.5 h-3.5 text-indigo-600" />
+              <span>Impor Data</span>
             </button>
           </div>
 
@@ -254,57 +331,78 @@ export const ManageAgenciesModal: React.FC<ManageAgenciesModalProps> = ({
             <button
               type="button"
               onClick={handleStartAdd}
-              className="mb-1 px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold flex items-center gap-1 shadow-xs transition-all cursor-pointer"
+              className="mb-1.5 btn-3d-blue px-3 py-1.5 text-xs font-black flex items-center gap-1.5 shadow-sm active:scale-95 cursor-pointer"
+              title="Tambah Instansi Publik Baru"
             >
-              <Plus className="w-3 h-3" />
-              Tambah Instansi
+              <Plus className="w-3.5 h-3.5" />
+              <span>+ Tambah Instansi</span>
             </button>
           )}
         </div>
 
+        {/* Notifikasi Aksi Banner */}
+        {notification && (
+          <div className="px-5 pt-3 shrink-0">
+            <div
+              className={`p-3 rounded-2xl text-xs font-bold flex items-center gap-2.5 shadow-md border animate-in fade-in slide-in-from-top-2 duration-200 ${
+                notification.type === 'delete'
+                  ? 'bg-rose-50 text-rose-800 border-rose-200'
+                  : notification.type === 'error'
+                  ? 'bg-amber-50 text-amber-800 border-amber-200'
+                  : 'bg-emerald-50 text-emerald-800 border-emerald-200'
+              }`}
+            >
+              <CheckCircle2 className={`w-4 h-4 shrink-0 ${notification.type === 'delete' ? 'text-rose-600' : 'text-emerald-600'}`} />
+              <span className="flex-1">{notification.message}</span>
+            </div>
+          </div>
+        )}
+
         {/* Content Area */}
-        <div className="flex-1 overflow-y-auto p-3.5 sm:p-4">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-5">
           {/* TAB 1: LIST / EDIT */}
           {activeTab === 'list' && (
             <div className="space-y-4">
-              {/* Add / Edit Form Drawer */}
+              {/* Add / Edit Form Drawer dengan Desain 3D Bergradasi */}
               {(isAddMode || editingAgency) && (
                 <form
                   onSubmit={handleSaveForm}
-                  className="bg-blue-50/60 p-4 sm:p-5 rounded-2xl border border-blue-200 space-y-4 mb-4"
+                  className="card-3d bg-gradient-to-br from-blue-50/95 via-indigo-50/70 to-white p-4 sm:p-5 rounded-2xl border-2 border-blue-200/90 shadow-xl space-y-4 mb-4 animate-in fade-in zoom-in-95 duration-200 transform-gpu"
                 >
-                  <div className="flex justify-between items-center">
-                    <h3 className="text-sm font-bold text-blue-900">
-                      {isAddMode ? '+ Tambah Instansi Publik Baru' : 'Edit Instansi Publik'}
-                    </h3>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsAddMode(false);
-                        setEditingAgency(null);
-                      }}
-                      className="text-xs text-slate-500 hover:text-slate-800"
-                    >
-                      Batal
-                    </button>
+                  <div className="flex justify-between items-center pb-2 border-b border-blue-100">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white flex items-center justify-center shadow-md">
+                        {isAddMode ? <Plus className="w-4 h-4" /> : <Edit2 className="w-4 h-4" />}
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-black text-blue-950">
+                          {isAddMode ? '+ Tambah Instansi Publik Baru' : 'Edit Instansi Publik'}
+                        </h3>
+                        <p className="text-[10px] text-blue-700 font-semibold">
+                          Tersimpan permanen di cloud Firestore &amp; sinkron di seluruh perangkat
+                        </p>
+                      </div>
+                    </div>
+                    {/* Tombol Batal di samping teks judul disembunyikan sesuai permintaan */}
                   </div>
 
-                  <div className="space-y-1">
-                    <label className="text-xs font-semibold text-slate-700">
-                      Nama Instansi Publik *
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                      <Building2 className="w-3.5 h-3.5 text-blue-600" />
+                      <span>Nama Instansi Publik *</span>
                     </label>
                     <input
                       type="text"
                       value={formName}
                       onChange={(e) => setFormName(e.target.value)}
-                      placeholder="Contoh: Dinas Kesehatan"
+                      placeholder="Contoh: Kejaksaan Negeri, Dinas Kesehatan, Kantor Imigrasi..."
                       required
-                      className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs sm:text-sm text-slate-900 focus:ring-2 focus:ring-blue-500 shadow-xs"
+                      className="input-3d w-full px-3.5 py-2.5 text-xs sm:text-sm font-bold text-slate-900 focus:ring-4 focus:ring-blue-500/20 shadow-xs"
                     />
                   </div>
 
-                  <div className="flex items-center justify-between pt-1">
-                    <label className="flex items-center gap-2 text-xs font-medium text-slate-700 cursor-pointer">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
+                    <label className="flex items-center gap-2.5 text-xs font-bold text-slate-800 cursor-pointer p-2 rounded-xl bg-white/90 border border-slate-200 shadow-2xs hover:bg-white transition-all">
                       <input
                         type="checkbox"
                         checked={formActive}
@@ -314,22 +412,23 @@ export const ManageAgenciesModal: React.FC<ManageAgenciesModalProps> = ({
                       <span>Instansi Aktif dalam Pilihan Formulir Survei Pemohon</span>
                     </label>
 
-                    <div className="flex gap-2">
+                    <div className="flex items-center gap-2 self-end sm:self-auto">
                       <button
                         type="button"
                         onClick={() => {
                           setIsAddMode(false);
                           setEditingAgency(null);
                         }}
-                        className="px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-200 rounded-xl font-medium"
+                        className="btn-3d-slate px-3.5 py-2 text-xs text-slate-700 font-bold"
                       >
                         Batal
                       </button>
                       <button
                         type="submit"
-                        className="px-4 py-1.5 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold shadow-xs cursor-pointer"
+                        className="btn-3d-blue px-4.5 py-2 text-xs font-black flex items-center gap-1.5 cursor-pointer shadow-md active:scale-95"
                       >
-                        Simpan Instansi
+                        <Check className="w-4 h-4" />
+                        <span>Simpan</span>
                       </button>
                     </div>
                   </div>
@@ -338,26 +437,29 @@ export const ManageAgenciesModal: React.FC<ManageAgenciesModalProps> = ({
 
               {/* Search agency */}
               <div className="relative">
-                <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-slate-400" />
+                <Search className="w-3.5 h-3.5 absolute left-3 top-3 text-slate-400" />
                 <input
                   type="text"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder="Cari nama instansi publik..."
-                  className="w-full pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-blue-500 focus:bg-white shadow-xs"
+                  className="input-3d w-full pl-9 pr-3 py-2 text-xs focus:ring-2 focus:ring-blue-500 shadow-xs font-bold"
                 />
               </div>
 
               {/* Agency list matching screenshot 5 */}
-              <div className="border border-slate-200 rounded-xl overflow-hidden divide-y divide-slate-100">
-                <div className="px-3 py-2 bg-slate-50 text-[11px] font-bold text-slate-500 uppercase tracking-wider flex justify-between items-center">
-                  <span>DAFTAR INSTANSI PUBLIK TERDAFTAR</span>
+              <div className="border border-slate-200 rounded-2xl overflow-hidden divide-y divide-slate-100 shadow-xs bg-white">
+                <div className="px-3.5 py-2.5 bg-slate-50 text-[11px] font-black text-slate-700 uppercase tracking-wider flex justify-between items-center border-b border-slate-200">
+                  <span className="flex items-center gap-1.5">
+                    <Building2 className="w-3.5 h-3.5 text-blue-600" />
+                    DAFTAR INSTANSI PUBLIK TERDAFTAR
+                  </span>
                   <div className="flex items-center gap-1.5 lowercase">
                     <button
                       type="button"
                       onClick={() => setAgencyPage((p) => Math.max(p - 1, 1))}
                       disabled={agencyPage === 1}
-                      className="px-2 py-0.5 bg-white border border-slate-300 rounded text-[11px] font-bold disabled:opacity-40"
+                      className="btn-3d-slate px-2 py-0.5 text-[11px] font-bold disabled:opacity-40"
                     >
                       Sebelumnya
                     </button>
@@ -366,27 +468,27 @@ export const ManageAgenciesModal: React.FC<ManageAgenciesModalProps> = ({
                       type="button"
                       onClick={() => setAgencyPage((p) => Math.min(p + 1, totalPages))}
                       disabled={agencyPage === totalPages}
-                      className="px-2 py-0.5 bg-white border border-slate-300 rounded text-[11px] font-bold disabled:opacity-40"
+                      className="btn-3d-slate px-2 py-0.5 text-[11px] font-bold disabled:opacity-40"
                     >
                       Selanjutnya
                     </button>
                   </div>
                 </div>
 
-                <div className="max-h-[250px] overflow-y-auto divide-y divide-slate-100">
+                <div className="max-h-[290px] overflow-y-auto divide-y divide-slate-100">
                   {paginatedAgencies.map((agency, index) => {
                     const absIdx = (agencyPage - 1) * itemsPerPage + index + 1;
                     return (
                       <div
                         key={agency.id}
-                        className="px-3 py-2.5 flex items-center justify-between hover:bg-slate-50 transition-colors gap-2"
+                        className="px-3.5 py-2.5 flex items-center justify-between hover:bg-blue-50/40 transition-all gap-2 group"
                       >
                         <div className="flex items-center gap-2.5 min-w-0 flex-1">
                           <span className="w-6 text-center text-[11px] font-mono font-bold text-slate-400 shrink-0">
                             {absIdx}
                           </span>
                           <div className="min-w-0 flex-1">
-                            <p className="text-xs font-bold text-slate-800 break-words leading-snug">
+                            <p className="text-xs font-bold text-slate-900 break-words leading-snug">
                               {agency.name}
                             </p>
                           </div>
@@ -397,35 +499,45 @@ export const ManageAgenciesModal: React.FC<ManageAgenciesModalProps> = ({
                           <button
                             type="button"
                             onClick={() => handleToggleStatus(agency)}
-                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold border transition-colors cursor-pointer ${
+                            className={`px-2.5 py-1 rounded-full text-[10px] font-black border transition-all cursor-pointer active:scale-95 shadow-2xs ${
                               agency.active
-                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
-                                : 'bg-slate-100 text-slate-500 border-slate-200 hover:bg-slate-200'
+                                ? 'bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100'
+                                : 'bg-slate-100 text-slate-500 border-slate-300 hover:bg-slate-200'
                             }`}
+                            title="Klik untuk mengubah status aktif / nonaktif"
                           >
                             {agency.active ? 'Aktif' : 'Nonaktif'}
                           </button>
 
-                          {/* Edit Button */}
+                          {/* Edit Button 3D */}
                           <button
                             type="button"
                             onClick={() => handleStartEdit(agency)}
-                            className="p-1 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
-                            title="Edit nama"
+                            className="btn-3d-slate p-1.5 text-slate-600 hover:text-blue-700 rounded-xl transition-all active:scale-90 cursor-pointer"
+                            title={`Edit nama instansi ${agency.name}`}
                           >
                             <Edit2 className="w-3.5 h-3.5" />
                           </button>
 
-                          {/* Tombol X / Hapus disembunyikan sesuai permintaan */}
+                          {/* Tombol Hapus 3 Dimensi */}
+                          <button
+                            type="button"
+                            onClick={() => setAgencyToDelete(agency)}
+                            className="btn-3d-rose p-1.5 sm:px-2.5 sm:py-1 rounded-xl flex items-center gap-1 text-[11px] font-bold shadow-xs active:scale-90 transition-all cursor-pointer"
+                            title={`Hapus instansi ${agency.name}`}
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                            <span className="hidden sm:inline">Hapus</span>
+                          </button>
                         </div>
                       </div>
                     );
                   })}
                 </div>
 
-                {/* Pagination Controls - tombol sebelumnya & selanjutnya di bagian bawah disembunyikan */}
-                <div className="px-3 py-2 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-[11px] text-slate-600 font-semibold">
-                  <span>Halaman {agencyPage} dari {totalPages} (5 instansi per halaman)</span>
+                {/* Pagination Controls */}
+                <div className="px-3.5 py-2 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-[11px] text-slate-600 font-semibold">
+                  <span>Halaman {agencyPage} dari {totalPages} ({filteredAgencies.length} instansi terfilter)</span>
                 </div>
               </div>
             </div>
@@ -607,18 +719,72 @@ export const ManageAgenciesModal: React.FC<ManageAgenciesModalProps> = ({
           )}
         </div>
 
-        {/* Modal Footer (Ukuran ringkas) */}
-        <div className="px-4 py-2 border-t border-slate-200 bg-slate-50/70 flex justify-between items-center text-[11px] text-slate-500">
-          <span>Mal Pelayanan Publik Kabupaten Bojonegoro</span>
+        {/* Modal Footer 3D */}
+        <div className="px-5 py-3 border-t border-slate-200 bg-slate-50 flex justify-between items-center text-[11px] text-slate-500 shrink-0">
+          <div className="flex items-center gap-1.5 font-bold text-slate-600">
+            <Building2 className="w-3.5 h-3.5 text-blue-600" />
+            <span>Mal Pelayanan Publik Kabupaten Bojonegoro</span>
+          </div>
           <button
             type="button"
             onClick={onClose}
-            className="px-3 py-1 bg-slate-200 hover:bg-slate-300 text-slate-800 font-semibold rounded-lg transition-colors cursor-pointer text-xs"
+            className="btn-3d-slate px-4 py-1.5 text-slate-800 font-bold text-xs"
           >
             Tutup
           </button>
         </div>
       </div>
+      </div>
+
+      {/* 3D Delete Confirmation Dialog Modal */}
+      {agencyToDelete && (
+        <div className="fixed inset-0 z-60 flex items-center justify-center p-3 sm:p-4 bg-slate-950/75 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="card-3d bg-white rounded-3xl max-w-sm w-full p-5 sm:p-6 border-2 border-rose-200 shadow-2xl space-y-4 text-center transform-gpu animate-in zoom-in-95 duration-200">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-rose-500 to-rose-600 text-white flex items-center justify-center mx-auto shadow-lg border border-rose-300/40 animate-pulse">
+              <Trash2 className="w-7 h-7 drop-shadow-md" />
+            </div>
+            <div>
+              <h3 className="text-base font-black text-slate-900 tracking-tight">
+                Hapus Instansi Publik?
+              </h3>
+              <p className="text-xs text-slate-600 mt-1">
+                Apakah Anda yakin ingin menghapus instansi publik ini:
+              </p>
+              <div className="mt-2.5 p-3 bg-rose-50 border border-rose-200 rounded-2xl font-black text-rose-950 text-xs break-words">
+                {agencyToDelete.name}
+              </div>
+              <p className="text-[10px] text-slate-500 mt-2 font-medium">
+                Penghapusan ini permanen di cloud Firestore dan akan disinkronkan ke seluruh perangkat secara otomatis.
+              </p>
+            </div>
+            <div className="flex items-center gap-2.5 pt-2">
+              <button
+                type="button"
+                onClick={() => setAgencyToDelete(null)}
+                disabled={isDeleting}
+                className="btn-3d-slate flex-1 py-2.5 text-xs font-bold"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmDelete}
+                disabled={isDeleting}
+                className="btn-3d-rose flex-1 py-2.5 text-xs font-black flex items-center justify-center gap-1.5 shadow-md active:scale-95 cursor-pointer"
+              >
+                {isDeleting ? (
+                  <span>Menghapus...</span>
+                ) : (
+                  <>
+                    <Trash2 className="w-4 h-4" />
+                    <span>Ya, Hapus Permanen</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -395,11 +395,13 @@ export default function App() {
             }}
             onOpenManageAgencies={() => setIsManageAgenciesOpen(true)}
             onDeleteSurvey={handleDeleteSurvey}
+            onDeleteAgency={handleDeleteAgency}
             onResetData={handleResetData}
             onAddTestSurvey={handleAddTestSurvey}
             isLive={isLive}
             operatorName={loggedInOperator || 'admin'}
             onLogout={handleLogout}
+            onBackToSurvey={handleLogout}
           />
         )}
       </main>
@@ -411,9 +413,9 @@ export default function App() {
             @ Copyright Mal Pelayanan Publik Kabupaten Bojonegoro - 2026
           </p>
 
-          {/* Tombol Clear Cache: Khusus di menu administrator disembunyikan */}
-          {currentView !== 'dashboard' && (
-            <div className="sm:absolute sm:right-0">
+          {/* Khusus Tampilan Beranda: Tombol Clear Cache dan di Samping Kanannya Logo Dashboard Admin */}
+          {currentView === 'survey' && (
+            <div className="sm:absolute sm:right-0 flex items-center gap-2.5">
               <button
                 type="button"
                 onClick={handleClearCache}
@@ -422,6 +424,25 @@ export default function App() {
               >
                 <RotateCcw className="w-3.5 h-3.5 text-blue-600" />
                 <span>Clear Cache</span>
+              </button>
+
+              {/* Logo Dashboard Admin di Samping Kanan Tombol Clear Cache */}
+              <button
+                type="button"
+                onClick={() => handleViewChange('dashboard')}
+                className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center p-0.5 bg-transparent hover:bg-slate-100 hover:scale-110 active:scale-95 transition-all cursor-pointer group focus:outline-hidden"
+                title={
+                  loggedInOperator
+                    ? `Dashboard Analitik (${loggedInOperator})`
+                    : 'Dashboard Analitik Administrator'
+                }
+                aria-label="Dashboard Administrator"
+              >
+                <img
+                  src="/logo-mpp-admin-3d.svg"
+                  alt="Logo Dashboard Administrator"
+                  className="w-full h-full object-contain filter drop-shadow-xs group-hover:scale-105 transition-transform bg-transparent"
+                />
               </button>
             </div>
           )}

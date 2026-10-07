@@ -6,7 +6,6 @@ import {
   TrendingUp,
   Search,
   Filter,
-  Trash2,
   Building2,
   Calendar,
   MessageSquare,
@@ -44,11 +43,13 @@ interface DashboardProps {
   onOpenPrintModal?: (currentFilters?: FilterState) => void;
   onOpenManageAgencies: () => void;
   onDeleteSurvey: (id: string) => Promise<void>;
+  onDeleteAgency?: (id: string) => Promise<void>;
   onResetData: () => Promise<void>;
   onAddTestSurvey: () => void;
   isLive: boolean;
   operatorName?: string;
   onLogout?: () => void;
+  onBackToSurvey?: () => void;
 }
 
 const MONTH_NAMES = [
@@ -62,11 +63,13 @@ export const Dashboard: React.FC<DashboardProps> = ({
   onOpenPrintModal,
   onOpenManageAgencies,
   onDeleteSurvey,
+  onDeleteAgency,
   onResetData,
   onAddTestSurvey,
   isLive,
   operatorName = 'Administrator SKM',
   onLogout,
+  onBackToSurvey,
 }) => {
   // Navigation tabs
   const [activeTab, setActiveTab] = useState<
@@ -432,14 +435,12 @@ export const Dashboard: React.FC<DashboardProps> = ({
       <div className="bg-white border-b-2 border-slate-200/90 shadow-sm">
         <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-5" style={{ maxWidth: '1600px', width: '100%' }}>
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="flex items-center gap-3.5 sm:gap-4">
-              {/* Logo Dasboard Administrator: Disembunyikan sesuai permintaan */}
-              <div className="flex flex-col justify-center">
-                <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-tight drop-shadow-xs">
-                  Dashboard Administrator
-                </h1>
+            <div className="flex flex-col justify-center">
+              <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-tight drop-shadow-xs">
+                Dashboard Administrator
+              </h1>
 
-                <div className="flex items-center gap-2 text-xs text-slate-600 mt-2 font-mono flex-wrap">
+              <div className="flex items-center gap-2 text-xs text-slate-600 mt-2 font-mono flex-wrap">
                   {/* Fitur Khusus Pengaturan IP Otomatis & Manual */}
                   <button
                     type="button"
@@ -495,7 +496,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
                   </button>
                 </div>
               </div>
-            </div>
 
             {/* Top right space */}
             <div className="flex items-center gap-2 sm:gap-3">
@@ -1630,15 +1630,15 @@ export const Dashboard: React.FC<DashboardProps> = ({
                   />
                 </div>
 
-                {/* Tombol Buka Menu Kelola: Khusus tampilan seluler teks dikemas rapi agar pas dengan tombol */}
+                {/* Tombol Buka Kelola Instansi Publik */}
                 <button
                   type="button"
                   onClick={onOpenManageAgencies}
                   className="btn-3d-blue px-3.5 sm:px-4 py-2 sm:py-2.5 text-[11px] sm:text-xs font-black text-center leading-tight flex items-center justify-center gap-1.5 shadow-sm active:scale-95 whitespace-normal break-words cursor-pointer"
-                  title="Buka Menu Kelola Instansi Lengkap"
+                  title="Buka Kelola Instansi Publik"
                 >
                   <Building2 className="w-3.5 h-3.5 shrink-0 hidden xs:inline" />
-                  <span className="text-center">Buka Menu Kelola Instansi Lengkap</span>
+                  <span className="text-center">Buka Kelola Instansi Publik</span>
                 </button>
               </div>
             </div>
@@ -1733,15 +1733,18 @@ export const Dashboard: React.FC<DashboardProps> = ({
                           )}
                         </td>
                         <td className="p-3 sm:p-4 text-center">
-                          <button
-                            type="button"
-                            onClick={() => handleSelectAgencyFromKinerja(agency.name)}
-                            className="btn-3d-slate px-2.5 py-1 text-[11px] font-bold text-blue-700 hover:text-blue-900 inline-flex items-center gap-1 cursor-pointer shadow-xs active:scale-95"
-                            title={`Lihat data pemohon untuk ${agency.name}`}
-                          >
-                            <span>Lihat</span>
-                            <ArrowUpRight className="w-3 h-3 text-blue-600" />
-                          </button>
+                          <div className="flex items-center justify-center gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => handleSelectAgencyFromKinerja(agency.name)}
+                              className="btn-3d-slate px-2.5 py-1 text-[11px] font-bold text-blue-700 hover:text-blue-900 inline-flex items-center gap-1 cursor-pointer shadow-xs active:scale-95"
+                              title={`Lihat data pemohon untuk ${agency.name}`}
+                            >
+                              <span>Lihat</span>
+                              <ArrowUpRight className="w-3 h-3 text-blue-600" />
+                            </button>
+                            {/* Tombol hapus di tabel Penilaian & Capaian Kinerja Instansi Pelayanan Publik disembunyikan sesuai permintaan */}
+                          </div>
                         </td>
                       </tr>
                     );
@@ -1781,13 +1784,14 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
       {/* Modal Edit Username dan Password Admin */}
       {isCredsModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-md animate-in fade-in duration-200">
-          <div className="relative w-full max-w-md bg-white rounded-3xl border border-slate-200 shadow-2xl overflow-hidden">
-            <div className="h-3 bg-gradient-to-r from-amber-500 to-indigo-600 shadow-md" />
+        <div className="fixed inset-0 z-50 overflow-y-auto overscroll-y-contain p-3 sm:p-4 bg-slate-950/70 backdrop-blur-md animate-in fade-in duration-200 touch-pan-y">
+          <div className="min-h-full flex items-center justify-center py-6 sm:py-8">
+            <div className="relative w-full max-w-md bg-white rounded-3xl border border-slate-200 shadow-2xl overflow-hidden my-auto max-h-[calc(100vh-2rem)] flex flex-col">
+              <div className="h-3 bg-gradient-to-r from-amber-500 to-indigo-600 shadow-md shrink-0" />
 
-            {/* Tombol X disembunyikan sesuai permintaan */}
+              {/* Tombol X disembunyikan sesuai permintaan */}
 
-            <form onSubmit={handleSaveCredentials} className="p-6 sm:p-7 space-y-4">
+              <form onSubmit={handleSaveCredentials} className="p-6 sm:p-7 space-y-4 overflow-y-auto overscroll-contain flex-1 touch-pan-y scroll-smooth">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center border border-amber-200 shadow-xs">
                   <KeyRound className="w-6 h-6" />
@@ -1884,17 +1888,19 @@ export const Dashboard: React.FC<DashboardProps> = ({
             </form>
           </div>
         </div>
+      </div>
       )}
 
       {/* Modal Pengaturan IP Jaringan (Otomatis vs Manual) */}
       {isIpModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-md animate-in fade-in duration-200">
-          <div className="relative w-full max-w-md bg-white rounded-3xl border border-slate-200 shadow-2xl overflow-hidden">
-            <div className="h-3 bg-gradient-to-r from-blue-600 to-indigo-600 shadow-md" />
+        <div className="fixed inset-0 z-50 overflow-y-auto overscroll-y-contain p-3 sm:p-4 bg-slate-950/70 backdrop-blur-md animate-in fade-in duration-200 touch-pan-y">
+          <div className="min-h-full flex items-center justify-center py-6 sm:py-8">
+            <div className="relative w-full max-w-md bg-white rounded-3xl border border-slate-200 shadow-2xl overflow-hidden my-auto max-h-[calc(100vh-2rem)] flex flex-col">
+              <div className="h-3 bg-gradient-to-r from-blue-600 to-indigo-600 shadow-md shrink-0" />
 
-            {/* Tombol X disembunyikan sesuai permintaan */}
+              {/* Tombol X disembunyikan sesuai permintaan */}
 
-            <div className="p-6 sm:p-7 space-y-5">
+              <div className="p-6 sm:p-7 space-y-5 overflow-y-auto overscroll-contain flex-1 touch-pan-y scroll-smooth">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-200 shadow-xs">
                   <Network className="w-6 h-6" />
@@ -2024,8 +2030,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
             </div>
           </div>
         </div>
+      </div>
       )}
-
 
     </div>
   );

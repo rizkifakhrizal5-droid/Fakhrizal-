@@ -1,14 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Home,
-  LayoutDashboard,
   Maximize,
   Minimize,
-  Lock,
-  LogOut,
-  UserCheck,
   Sparkles,
-  Wifi,
   WifiOff,
   RotateCcw
 } from 'lucide-react';
@@ -117,13 +111,12 @@ export const Navbar: React.FC<NavbarProps> = ({
 
       {/* 2. Main Navigation Bar with Official GAMPIL Logo */}
       <div className="w-full max-w-[1600px] mx-auto px-3 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-2" style={{ maxWidth: '1600px', width: '100%' }}>
-        {/* Logo MPP Baru 3 Dimensi Bojonegoro dengan Teks MPP - Gampil & Garis Lurus */}
+        {/* Logo MPP Baru 3 Dimensi Bojonegoro dengan Teks MPP - Gampil & Garis Lurus (Logo menu beranda tidak bisa diklik lagi) */}
         <div
-          onClick={() => onViewChange('survey')}
-          className="flex items-center gap-2 sm:gap-3.5 cursor-pointer group min-w-0"
+          className="flex items-center gap-2 sm:gap-3.5 cursor-default select-none group min-w-0"
           title="Mal Pelayanan Publik Kabupaten Bojonegoro"
         >
-          <div className="h-11 w-11 sm:h-14 sm:w-14 flex items-center justify-center p-0.5 transition-transform duration-200 group-hover:scale-105 shrink-0 bg-transparent">
+          <div className="h-11 w-11 sm:h-14 sm:w-14 flex items-center justify-center p-0.5 shrink-0 bg-transparent">
             <img
               src="/logo-mpp-transparent.svg"
               alt="Logo MPP - Gampil Bojonegoro"
@@ -146,46 +139,8 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
         </div>
 
-        {/* 3. Menu Beranda dan Dashboard Admin: Logo Saja Tanpa Background Belakang */}
+        {/* 3. Aksi Kanan Atas: Fullscreen Toggle */}
         <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
-          {/* Menu Beranda: Logo Saja Tanpa Background Belakang */}
-          <button
-            type="button"
-            onClick={() => onViewChange('survey')}
-            className={`w-10 h-10 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center transition-all duration-150 cursor-pointer relative group p-1 bg-transparent border ${
-              currentView === 'survey'
-                ? 'border-blue-500 bg-blue-50/60 shadow-xs scale-105'
-                : 'border-transparent hover:bg-slate-100 hover:scale-102'
-            }`}
-            title="Menu Beranda (Formulir Survei)"
-            aria-label="Menu Beranda"
-          >
-            <img
-              src="/logo-mpp-beranda-3d.svg"
-              alt="Logo Menu Beranda"
-              className="w-full h-full object-contain filter drop-shadow-sm transition-transform group-hover:scale-110 active:scale-95 bg-transparent"
-            />
-          </button>
-
-          {/* Dashboard Admin: Logo Saja Tanpa Background Belakang */}
-          <button
-            type="button"
-            onClick={() => onViewChange('dashboard')}
-            className={`w-10 h-10 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center transition-all duration-150 cursor-pointer relative group p-1 bg-transparent border ${
-              currentView === 'dashboard'
-                ? 'border-indigo-500 bg-indigo-50/60 shadow-xs scale-105'
-                : 'border-transparent hover:bg-slate-100 hover:scale-102'
-            }`}
-            title={loggedInOperator ? `Dashboard Analitik (${loggedInOperator})` : 'Dashboard Analitik Admin'}
-            aria-label="Dashboard Admin"
-          >
-            <img
-              src="/logo-mpp-admin-3d.svg"
-              alt="Logo Dashboard Admin"
-              className="w-full h-full object-contain filter drop-shadow-sm transition-transform group-hover:scale-110 active:scale-95 bg-transparent"
-            />
-          </button>
-
           {/* Fullscreen Toggle: Logo Saja */}
           <button
             type="button"

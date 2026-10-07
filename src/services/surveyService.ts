@@ -118,37 +118,23 @@ export function subscribeSurveys(
   }
 }
 
-const AGENCIES_SYNC_VERSION = 'v2026_10_05_official_32_synced_v3';
-
 /**
- * Real-time listener for Agencies
+ * Real-time listener for Agencies (Tersimpan permanen di Cloud Firestore & Multi-Perangkat)
  */
 export function subscribeAgencies(
   onUpdate: (agencies: Agency[]) => void,
   onError?: (err: unknown) => void
 ): () => void {
+  // 1. Tampilkan cache lokal terlebih dahulu untuk menghindari flicker
   const cached = getLocalCache<Agency[]>(LOCAL_STORAGE_KEY_AGENCIES, DEFAULT_AGENCIES);
-  
-  // Check if official 32 agencies list needs to be primed
-  const needsSync =
-    localStorage.getItem('gampil_agencies_sync_version') !== AGENCIES_SYNC_VERSION ||
-    cached.length < 32 ||
-    cached[0]?.name !== 'Kejaksaan Negeri';
-
-  if (needsSync) {
-    setLocalCache(LOCAL_STORAGE_KEY_AGENCIES, DEFAULT_AGENCIES);
-    localStorage.setItem('gampil_agencies_sync_version', AGENCIES_SYNC_VERSION);
-    onUpdate(DEFAULT_AGENCIES);
-    seedAgenciesToFirestore(DEFAULT_AGENCIES).catch(() => {});
-  } else {
-    onUpdate(cached);
-  }
+  onUpdate(cached);
 
   try {
     const unsubscribe = onSnapshot(
       collection(db, AGENCIES_COLLECTION),
       (snapshot) => {
         if (!snapshot.empty) {
+          // Firestore adalah sumber kebenaran utama (Authoritative Cloud Database)
           const list: Agency[] = snapshot.docs.map((docSnap) => {
             const data = docSnap.data();
             return {
@@ -160,21 +146,16 @@ export function subscribeAgencies(
             };
           });
 
-          list.sort((a, b) => a.order - b.order);
+          // Urutkan berdasarkan urutan order atau nama
+          list.sort((a, b) => (a.order || 0) - (b.order || 0));
 
-          // If the Firestore data has outdated agency names or missing any of the 32, update it to official 32
-          if (list.length < 32 || list[0]?.name !== 'Kejaksaan Negeri' || list[31]?.name !== 'Dinas Penanaman Modal Dan Pelayanan Terpadu Satu Pintu') {
-            seedAgenciesToFirestore(DEFAULT_AGENCIES).catch(() => {});
-            setLocalCache(LOCAL_STORAGE_KEY_AGENCIES, DEFAULT_AGENCIES);
-            onUpdate(DEFAULT_AGENCIES);
-            return;
-          }
-
+          // Simpan ke cache lokal agar sinkron di perangkat ini
           setLocalCache(LOCAL_STORAGE_KEY_AGENCIES, list);
           onUpdate(list);
         } else {
-          // Seed agencies if empty
-          seedAgenciesToFirestore(DEFAULT_AGENCIES);
+          // Jika koleksi di Firestore benar-benar kosong pertama kali, seed data default resmi
+          seedAgenciesToFirestore(DEFAULT_AGENCIES).catch(() => {});
+          setLocalCache(LOCAL_STORAGE_KEY_AGENCIES, DEFAULT_AGENCIES);
           onUpdate(DEFAULT_AGENCIES);
         }
       },
@@ -186,7 +167,7 @@ export function subscribeAgencies(
 
     return unsubscribe;
   } catch (err) {
-    console.warn('Fallback: Using default agencies');
+    console.warn('Fallback: Using cached/default agencies');
     return () => {};
   }
 }
